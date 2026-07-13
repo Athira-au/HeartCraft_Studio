@@ -4,6 +4,7 @@ public class ViewResetController : MonoBehaviour
 {
     public Transform modelHolder;
     public ForceCameraToModel cameraController;
+    public CutRuntimeController cutController;
 
     Quaternion initialRotation;
 
@@ -20,5 +21,11 @@ public class ViewResetController : MonoBehaviour
 
         if (cameraController != null)
             cameraController.ResetZoom();
+
+        if (cutController == null)
+            cutController = FindFirstObjectByType<CutRuntimeController>();
+
+        if (cutController != null)
+            cutController.ResetModelGeometry();
     }
 }

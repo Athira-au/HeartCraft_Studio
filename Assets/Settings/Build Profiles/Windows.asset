@@ -20,8 +20,12 @@ MonoBehaviour:
     rid: 7914192505337282618
   m_OverrideGlobalSceneList: 1
   m_Scenes:
-  - m_enabled: 1
+  - m_enabled: 0
     m_path: Assets/HeartCraftStudio.unity
+  - m_enabled: 0
+    m_path: Assets/heartcraft_2rev.unity
+  - m_enabled: 1
+    m_path: Assets/heartcraft_2rev2.unity
   m_ScriptingDefines: []
   m_PlayerSettingsYaml:
     m_Settings:

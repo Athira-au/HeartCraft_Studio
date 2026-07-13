@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class LabelPlacer : MonoBehaviour
@@ -9,54 +10,79 @@ public class LabelPlacer : MonoBehaviour
 
     void Start()
     {
-        // Auto-assign Main Camera if not set
         if (cam == null)
             cam = Camera.main;
     }
 
     void Update()
-{
-    // Must be in label mode
-    if (!LabelMode.labelMode) return;
-
-    // 🔒 Popup open → do NOT allow new labels
-    if (LabelPopup.Instance != null &&
-        LabelPopup.Instance.gameObject.activeSelf)
-        return;
-
-    if (Input.GetMouseButtonDown(0))
     {
+        if (!LabelMode.labelMode)
+            return;
+
+        if (LabelPopup.Instance != null && LabelPopup.Instance.gameObject.activeSelf)
+            return;
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (!Input.GetMouseButtonDown(0))
+            return;
+
+        Transform activeModel = GetActiveModel();
+        if (activeModel == null)
+            return;
+
+        MeshCollider activeCollider = activeModel.GetComponent<MeshCollider>();
+        if (activeCollider == null)
+            activeCollider = activeModel.gameObject.AddComponent<MeshCollider>();
+
+        MeshFilter activeFilter = activeModel.GetComponent<MeshFilter>();
+        if (activeFilter == null || activeFilter.sharedMesh == null)
+            return;
+
+        activeCollider.sharedMesh = null;
+        activeCollider.sharedMesh = activeFilter.sharedMesh;
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
+        if (activeCollider.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
             PlaceLabel(hit.point, hit.normal);
-        }
     }
-}
 
-void PlaceLabel(Vector3 hitPoint, Vector3 hitNormal)
-{
-    GameObject label = Instantiate(labelPrefab, hitPoint, Quaternion.identity);
-    LabelManager.Instance.RegisterLabel(label);
-    label.transform.SetParent(modelHolder, true);
+    private Transform GetActiveModel()
+    {
+        if (modelHolder == null)
+        {
+            GameObject holder = GameObject.Find("ModelHolder");
+            if (holder != null)
+                modelHolder = holder.transform;
+        }
 
-    label.transform.position = hitPoint + hitNormal *0.1f;
-    label.transform.localScale = Vector3.one *0.2f;
+        if (modelHolder == null || modelHolder.childCount == 0)
+            return null;
 
-    if (label.GetComponent<Billboard>() == null)
-        label.AddComponent<Billboard>();
+        return modelHolder.GetChild(0);
+    }
 
-    // 🔥 CLEAR DEFAULT TEXT
-    TMP_Text txt = label.GetComponentInChildren<TMP_Text>();
-    if (txt != null)
-        txt.text = "";
+    void PlaceLabel(Vector3 hitPoint, Vector3 hitNormal)
+    {
+        if (labelPrefab == null || LabelManager.Instance == null || LabelPopup.Instance == null)
+            return;
 
-    LabelPopup.Instance.Open(label);
-}
+        GameObject label = Instantiate(labelPrefab, hitPoint, Quaternion.identity);
+        LabelManager.Instance.RegisterLabel(label);
 
+        label.transform.SetParent(modelHolder, true);
+        label.transform.position = hitPoint + hitNormal * 0.1f;
+        label.transform.localScale = Vector3.one * 0.2f;
 
+        if (label.GetComponent<Billboard>() == null)
+            label.AddComponent<Billboard>();
 
+        TMP_Text txt = label.GetComponentInChildren<TMP_Text>();
+        if (txt != null)
+            txt.text = "";
 
+        label.SetActive(true);
+        LabelPopup.Instance.Open(label);
+    }
 }

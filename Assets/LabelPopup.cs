@@ -25,19 +25,15 @@ public class LabelPopup : MonoBehaviour
 
     public void OnConfirm()
     {
-        if (currentLabel == null) return;
+      if (currentLabel == null) return;
 
-        TMP_Text txt = currentLabel.GetComponentInChildren<TMP_Text>();
+    TMP_Text txt = currentLabel.GetComponentInChildren<TMP_Text>();
 
-        if (txt != null && !string.IsNullOrEmpty(nameInput.text))
-        {
-            txt.text = nameInput.text;
-        }
+    if (txt != null && !string.IsNullOrEmpty(nameInput.text))
+        txt.text = nameInput.text;
 
-        // 🔒 Exit label mode after confirming
-        LabelMode.labelMode = false;
-
-        Close();
+    LabelMode.labelMode = false;
+    Close();
     }
 
     public void OnCancel()

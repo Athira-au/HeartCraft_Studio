@@ -6,29 +6,33 @@ public class LabelManager : MonoBehaviour
     public static LabelManager Instance;
 
     private Stack<GameObject> labelStack = new Stack<GameObject>();
+    private CutRuntimeController cutController;
 
     void Awake()
     {
         Instance = this;
+
+        cutController = GetComponent<CutRuntimeController>();
+
+        if (cutController == null)
+            cutController = gameObject.AddComponent<CutRuntimeController>();
     }
 
-    // Called when a new label is created
     public void RegisterLabel(GameObject label)
     {
         labelStack.Push(label);
     }
 
-    // UNDO → remove last label
     public void UndoLabel()
     {
-        if (labelStack.Count == 0) return;
+        if (labelStack.Count == 0)
+            return;
 
         GameObject last = labelStack.Pop();
         if (last != null)
             Destroy(last);
     }
 
-    // RESET → remove all labels
     public void ResetLabels()
     {
         while (labelStack.Count > 0)
@@ -37,5 +41,24 @@ public class LabelManager : MonoBehaviour
             if (lbl != null)
                 Destroy(lbl);
         }
+    }
+
+    // ✅ THESE CALL YOUR CUT SYSTEM
+    public void SetCutPlaneX()
+    {
+        if (cutController != null)
+            cutController.SetCutPlaneX();
+    }
+
+    public void SetCutPlaneY()
+    {
+        if (cutController != null)
+            cutController.SetCutPlaneY();
+    }
+
+    public void SetCutPlaneZ()
+    {
+        if (cutController != null)
+            cutController.SetCutPlaneZ();
     }
 }
